@@ -18,6 +18,15 @@ const startServer = async () => {
     await connectDB();
     startRecurringScheduler();
 
+    const { getProviderInfo } = await import("./services/ai.service.js");
+    const aiInfo = getProviderInfo();
+    console.log(
+      `AI engine: ${aiInfo.activeProvider} (configured: ${aiInfo.configuredProvider})`,
+    );
+    if (aiInfo.fallbackReason) {
+      console.log(`AI note: ${aiInfo.fallbackReason}`);
+    }
+
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || "development"}`);

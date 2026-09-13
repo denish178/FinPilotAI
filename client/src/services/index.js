@@ -65,6 +65,7 @@ export const notificationService = {
 };
 
 export const aiService = {
+  getProvider: () => api.get("/ai/provider"),
   getInsights: (params) => api.get("/ai/insights", { params }),
   getTips: (params) => api.get("/ai/tips", { params }),
   getSpendingHabits: (params) => api.get("/ai/spending-habits", { params }),

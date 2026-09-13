@@ -32,7 +32,7 @@ export default function ForgotPassword() {
   return (
     <AuthLayout
       title="Forgot password"
-      subtitle="We'll send you a reset link (API coming in Phase 13)"
+      subtitle="We'll email you a reset link (check server console if SMTP is off)"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input

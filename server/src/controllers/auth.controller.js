@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import * as authService from "../services/auth.service.js";
+import * as passwordResetService from "../services/passwordReset.service.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -24,9 +25,16 @@ export const registerUser = asyncHandler(async (req, res) => {
     name,
     email: email.toLowerCase(),
     password,
+    isEmailVerified: false,
   });
 
   await user.save();
+
+  try {
+    await passwordResetService.sendEmailVerification(user);
+  } catch (error) {
+    console.warn("Verification email failed:", error.message);
+  }
 
   const createdUser = await authService.sanitizeUser(user._id);
 
@@ -106,11 +114,8 @@ export const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Logged out successfully"));
 });
 
-/** Placeholder until email service is wired (Phase 13). Same response either way. */
 export const forgotPassword = asyncHandler(async (req, res) => {
-  if (!req.body?.email?.trim()) {
-    throw new ApiError(400, "Email is required");
-  }
+  await passwordResetService.requestPasswordReset(req.body.email);
 
   return res.status(200).json(
     new ApiResponse(
@@ -121,16 +126,22 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   );
 });
 
-export const resetPassword = asyncHandler(async (_req, res) => {
-  throw new ApiError(
-    501,
-    "Password reset is not available yet. Email integration is planned.",
+export const resetPassword = asyncHandler(async (req, res) => {
+  await passwordResetService.resetPasswordWithToken(
+    req.body.token,
+    req.body.password,
   );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password reset successfully"));
 });
 
-export const verifyEmail = asyncHandler(async (_req, res) => {
-  throw new ApiError(
-    501,
-    "Email verification is not available yet. Email integration is planned.",
-  );
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const user = await passwordResetService.verifyEmailWithToken(req.body.token);
+  const sanitized = await authService.sanitizeUser(user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, sanitized, "Email verified successfully"));
 });

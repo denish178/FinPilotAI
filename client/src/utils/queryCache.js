@@ -5,5 +5,7 @@ export const invalidateFinanceQueries = (queryClient) => {
   queryClient.invalidateQueries({ queryKey: ["analytics"] });
   queryClient.invalidateQueries({ queryKey: ["budgets"] });
   queryClient.invalidateQueries({ queryKey: ["recurring"] });
+  queryClient.invalidateQueries({ queryKey: ["goals"] });
+  queryClient.invalidateQueries({ queryKey: ["goals-upcoming"] });
   queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 };

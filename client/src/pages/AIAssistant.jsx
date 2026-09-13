@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bot, Sparkles, AlertTriangle, PiggyBank, TrendingUp } from "lucide-react";
+import { Bot, Sparkles, AlertTriangle, PiggyBank, TrendingUp, Info } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -12,6 +12,11 @@ import { useSettingsStore } from "../stores/settingsStore";
 export default function AIAssistant() {
   const currency = useSettingsStore((s) => s.currency);
   const [activeTab, setActiveTab] = useState("insights");
+
+  const { data: providerInfo } = useQuery({
+    queryKey: ["ai-provider"],
+    queryFn: () => aiService.getProvider().then((r) => r.data.data),
+  });
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["ai-insights"],
@@ -27,15 +32,32 @@ export default function AIAssistant() {
     { id: "unusual", label: "Unusual Expenses", icon: AlertTriangle },
   ];
 
+  const activeProvider =
+    data?.meta?.provider ||
+    providerInfo?.activeProvider ||
+    data?.spendingHabits?.provider ||
+    "rule_based";
+  const fallbackNote =
+    data?.meta?.fallbackReason || providerInfo?.fallbackReason || null;
+
   return (
     <div className="space-y-6">
+      {fallbackNote && (
+        <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+          <Info size={18} className="mt-0.5 shrink-0" />
+          <p>{fallbackNote}</p>
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-primary-600 p-3 text-white"><Bot size={24} /></div>
           <div>
             <h1 className="text-2xl font-bold">AI Assistant</h1>
             <p className="text-sm text-slate-500">
-              Provider: {data?.meta?.provider || data?.spendingHabits?.provider || "rule_based"}
+              Provider: {activeProvider}
+              {providerInfo?.openaiConfigured && providerInfo?.configuredProvider === "openai"
+                ? " · OpenAI key detected"
+                : ""}
             </p>
           </div>
         </div>

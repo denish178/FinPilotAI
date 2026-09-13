@@ -15,7 +15,6 @@ const queryClient = new QueryClient({
 
 function AppInitializer({ children }) {
   const fetchUser = useAuthStore((s) => s.fetchUser);
-  const loadSettings = useAuthStore((s) => s.loadSettings);
   const accessToken = useAuthStore((s) => s.accessToken);
   const initTheme = useThemeStore((s) => s.initTheme);
   const settingsTheme = useSettingsStore((s) => s.theme);
@@ -24,9 +23,8 @@ function AppInitializer({ children }) {
     initTheme();
     if (accessToken) {
       fetchUser();
-      loadSettings();
     }
-  }, [accessToken, fetchUser, loadSettings, initTheme]);
+  }, [accessToken, fetchUser, initTheme]);
 
   useEffect(() => {
     useThemeStore.getState().setTheme(settingsTheme);

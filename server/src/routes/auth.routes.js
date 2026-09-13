@@ -4,6 +4,9 @@ import {
   getCurrentUser,
   logoutUser,
   refreshToken,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
 } from "../controllers/auth.controller.js";
 import {
   updateProfile,
@@ -30,6 +33,9 @@ const router = express.Router();
 router.post("/register", authLimiter, registerUser);
 router.post("/login", authLimiter, loginUser);
 router.post("/refresh-token", authLimiter, refreshToken);
+router.post("/forgot-password", authLimiter, forgotPassword);
+router.post("/reset-password", authLimiter, resetPassword);
+router.post("/verify-email", authLimiter, verifyEmail);
 router.get("/me", verifyJWT, getCurrentUser);
 router.post("/logout", verifyJWT, logoutUser);
 

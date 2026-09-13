@@ -99,4 +99,25 @@ describe("Auth API", () => {
       expect(res.status).toBe(401);
     });
   });
+
+  describe("POST /api/auth/forgot-password", () => {
+    it("should accept forgot password request", async () => {
+      const res = await request(app)
+        .post("/api/auth/forgot-password")
+        .send({ email: "nobody@example.com" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toMatch(/reset link/i);
+    });
+  });
+
+  describe("POST /api/auth/reset-password", () => {
+    it("should reject invalid token", async () => {
+      const res = await request(app)
+        .post("/api/auth/reset-password")
+        .send({ token: "invalid-token", password: "NewPass123!" });
+
+      expect(res.status).toBe(400);
+    });
+  });
 });

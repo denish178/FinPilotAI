@@ -13,6 +13,7 @@ import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import { PageLoader } from "../components/ui/Loader";
 import { goalService } from "../services";
+import { invalidateFinanceQueries } from "../utils/queryCache";
 import { formatCurrency, formatDate } from "../utils/format";
 import { useSettingsStore } from "../stores/settingsStore";
 
@@ -37,6 +38,7 @@ export default function Goals() {
     onSuccess: () => {
       toast.success("Goal created");
       queryClient.invalidateQueries({ queryKey: ["goals"] });
+      invalidateFinanceQueries(queryClient);
       setModalOpen(false);
       form.reset();
     },
@@ -48,7 +50,7 @@ export default function Goals() {
     onSuccess: (res) => {
       const completed = res.data.data.progress?.isCompleted;
       toast.success(completed ? "🎉 Goal achieved!" : "Contribution added");
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      invalidateFinanceQueries(queryClient);
       setContribGoal(null);
       setContribAmount("");
     },
@@ -60,6 +62,7 @@ export default function Goals() {
     onSuccess: () => {
       toast.success("Goal deleted");
       queryClient.invalidateQueries({ queryKey: ["goals"] });
+      invalidateFinanceQueries(queryClient);
       setDeleteId(null);
     },
   });

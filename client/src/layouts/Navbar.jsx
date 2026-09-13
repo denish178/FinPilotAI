@@ -5,6 +5,7 @@ import { useAuthStore } from "../stores/authStore";
 import { useThemeStore } from "../stores/themeStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { notificationService } from "../services";
+import { authService } from "../services/auth.service";
 import { ROUTES } from "../constants/routes";
 import Button from "../components/ui/Button";
 
@@ -13,6 +14,7 @@ export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuthStore();
   const { resolveTheme, setTheme } = useThemeStore();
   const setThemePreference = useSettingsStore((s) => s.setThemePreference);
+  const markSettingsSaved = useSettingsStore((s) => s.markSaved);
 
   const isDark = resolveTheme() === "dark";
 
@@ -20,6 +22,11 @@ export default function Navbar({ onMenuClick }) {
     const next = isDark ? "light" : "dark";
     setTheme(next);
     setThemePreference(next);
+    authService.updateSettings({ theme: next }).then(() => {
+      markSettingsSaved();
+    }).catch(() => {
+      /* keep local theme; user can retry from Settings */
+    });
   };
 
   const { data: unreadData } = useQuery({

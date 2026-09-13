@@ -19,15 +19,7 @@ export const authService = {
   getSettings: () => api.get("/auth/settings"),
   updateSettings: (data) => api.patch("/auth/settings", data),
   forgotPassword: (email) =>
-    api.post("/auth/forgot-password", { email }).catch(() => ({
-      data: { message: "If the email exists, a reset link will be sent." },
-    })),
-  resetPassword: (data) =>
-    api.post("/auth/reset-password", data).catch(() => {
-      throw new Error("Password reset API coming soon (Phase 13)");
-    }),
-  verifyEmail: (token) =>
-    api.post("/auth/verify-email", { token }).catch(() => {
-      throw new Error("Email verification API coming soon (Phase 13)");
-    }),
+    api.post("/auth/forgot-password", { email: String(email).trim() }),
+  resetPassword: (data) => api.post("/auth/reset-password", data),
+  verifyEmail: (token) => api.post("/auth/verify-email", { token }),
 };

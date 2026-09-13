@@ -149,7 +149,9 @@ export const parseTransactionsCsv = (fileContent) => {
         category,
         description: String(row.description || "").trim(),
         date: parseDate(row.date),
-        paymentMethod: normalizePaymentMethod(row.paymentMethod),
+        paymentMethod: normalizePaymentMethod(
+          row.paymentmethod ?? row.paymentMethod,
+        ),
       });
     } catch (error) {
       errors.push({ row: i + 1, message: error.message });

@@ -105,3 +105,32 @@ export const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, null, "Logged out successfully"));
 });
+
+/** Placeholder until email service is wired (Phase 13). Same response either way. */
+export const forgotPassword = asyncHandler(async (req, res) => {
+  if (!req.body?.email?.trim()) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      null,
+      "If the email exists, a reset link will be sent.",
+    ),
+  );
+});
+
+export const resetPassword = asyncHandler(async (_req, res) => {
+  throw new ApiError(
+    501,
+    "Password reset is not available yet. Email integration is planned.",
+  );
+});
+
+export const verifyEmail = asyncHandler(async (_req, res) => {
+  throw new ApiError(
+    501,
+    "Email verification is not available yet. Email integration is planned.",
+  );
+});

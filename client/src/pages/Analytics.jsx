@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { StatCard } from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
-import { PageLoader, Skeleton } from "../components/ui/Loader";
+import { Skeleton } from "../components/ui/Loader";
 import ChartCard from "../components/analytics/ChartCard";
 import PeriodSelector from "../components/analytics/PeriodSelector";
 import {

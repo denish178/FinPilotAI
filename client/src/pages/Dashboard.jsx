@@ -26,7 +26,7 @@ import { StatCard } from "../components/ui/Card";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
-import { PageLoader, Skeleton } from "../components/ui/Loader";
+import { Skeleton } from "../components/ui/Loader";
 import { dashboardService, goalService } from "../services";
 import { formatCurrency, formatDate } from "../utils/format";
 import { ROUTES } from "../constants/routes";

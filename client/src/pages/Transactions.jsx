@@ -66,12 +66,24 @@ const buildQueryParams = (filters, page) => {
   if (filters.type) params.type = filters.type;
   if (filters.category) params.category = filters.category;
   if (filters.startDate) params.startDate = new Date(filters.startDate).toISOString();
-  if (filters.endDate) params.endDate = new Date(filters.endDate).toISOString();
+  if (filters.endDate) {
+    const end = new Date(filters.endDate);
+    end.setHours(23, 59, 59, 999);
+    params.endDate = end.toISOString();
+  }
   if (filters.minAmount) params.minAmount = Number(filters.minAmount);
   if (filters.maxAmount) params.maxAmount = Number(filters.maxAmount);
   if (filters.paymentMethod) params.paymentMethod = filters.paymentMethod;
 
   return params;
+};
+
+const invalidateFinanceQueries = (queryClient) => {
+  queryClient.invalidateQueries({ queryKey: ["transactions"] });
+  queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
+  queryClient.invalidateQueries({ queryKey: ["analytics"] });
+  queryClient.invalidateQueries({ queryKey: ["budgets"] });
+  queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 };
 
 const handleBudgetAlert = (response) => {
@@ -120,8 +132,7 @@ export default function Transactions() {
     onSuccess: (response) => {
       handleBudgetAlert(response);
       toast.success(editTx ? "Transaction updated" : "Transaction created");
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
+      invalidateFinanceQueries(queryClient);
       setModalOpen(false);
       setEditTx(null);
       form.reset(defaultValues);
@@ -133,8 +144,7 @@ export default function Transactions() {
     mutationFn: (id) => transactionService.delete(id),
     onSuccess: () => {
       toast.success("Transaction deleted");
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
+      invalidateFinanceQueries(queryClient);
       setDeleteId(null);
       setSelected([]);
     },
@@ -153,8 +163,7 @@ export default function Transactions() {
       if (result.budgetAlerts?.length) {
         toast("Some imported expenses triggered budget alerts", { icon: "⚠️" });
       }
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
+      invalidateFinanceQueries(queryClient);
       setIsImporting(false);
     },
     onError: (err) => {
@@ -264,8 +273,7 @@ export default function Transactions() {
     try {
       await Promise.all(selected.map((id) => transactionService.delete(id)));
       toast.success(`${selected.length} transaction(s) deleted`);
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
+      invalidateFinanceQueries(queryClient);
       setSelected([]);
     } catch {
       toast.error("Failed to delete selected transactions");

@@ -12,6 +12,7 @@ import Transactions from "../pages/Transactions";
 import Analytics from "../pages/Analytics";
 import Budgets from "../pages/Budgets";
 import Goals from "../pages/Goals";
+import Recurring from "../pages/Recurring";
 import AIAssistant from "../pages/AIAssistant";
 import Notifications from "../pages/Notifications";
 import Profile from "../pages/Profile";
@@ -35,6 +36,7 @@ export default function AppRoutes() {
         <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
         <Route path={ROUTES.BUDGETS} element={<Budgets />} />
         <Route path={ROUTES.GOALS} element={<Goals />} />
+        <Route path={ROUTES.RECURRING} element={<Recurring />} />
         <Route path={ROUTES.AI} element={<AIAssistant />} />
         <Route path={ROUTES.NOTIFICATIONS} element={<Notifications />} />
         <Route path={ROUTES.PROFILE} element={<Profile />} />

@@ -23,6 +23,7 @@ export default {
   "nav.analytics": "Analytics",
   "nav.budgets": "Budgets",
   "nav.goals": "Goals",
+  "nav.recurring": "Recurring",
   "nav.ai": "AI Assistant",
   "nav.notifications": "Notifications",
   "nav.profile": "Profile",

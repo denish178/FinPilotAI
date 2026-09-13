@@ -17,6 +17,7 @@ import TransactionFilters from "../components/transactions/TransactionFilters";
 import { transactionService } from "../services";
 import { formatCurrency, formatDate } from "../utils/format";
 import { downloadCsv, parseTransactionsCsv, transactionsToCsv } from "../utils/csv";
+import { invalidateFinanceQueries } from "../utils/queryCache";
 import {
   getCategoriesForType,
   PAYMENT_METHODS,
@@ -76,14 +77,6 @@ const buildQueryParams = (filters, page) => {
   if (filters.paymentMethod) params.paymentMethod = filters.paymentMethod;
 
   return params;
-};
-
-const invalidateFinanceQueries = (queryClient) => {
-  queryClient.invalidateQueries({ queryKey: ["transactions"] });
-  queryClient.invalidateQueries({ queryKey: ["dashboard-overview"] });
-  queryClient.invalidateQueries({ queryKey: ["analytics"] });
-  queryClient.invalidateQueries({ queryKey: ["budgets"] });
-  queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 };
 
 const handleBudgetAlert = (response) => {

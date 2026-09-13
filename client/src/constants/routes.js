@@ -9,6 +9,7 @@ export const ROUTES = {
   ANALYTICS: "/analytics",
   BUDGETS: "/budgets",
   GOALS: "/goals",
+  RECURRING: "/recurring",
   AI: "/ai-assistant",
   NOTIFICATIONS: "/notifications",
   PROFILE: "/profile",

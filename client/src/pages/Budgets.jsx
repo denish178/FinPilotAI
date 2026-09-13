@@ -12,6 +12,7 @@ import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import { PageLoader } from "../components/ui/Loader";
 import { budgetService } from "../services";
+import { invalidateFinanceQueries } from "../utils/queryCache";
 import { formatCurrency } from "../utils/format";
 import { useSettingsStore } from "../stores/settingsStore";
 import { EXPENSE_CATEGORIES } from "../constants/transactions";
@@ -44,7 +45,7 @@ export default function Budgets() {
       editBudget ? budgetService.update(editBudget._id, payload) : budgetService.create(payload),
     onSuccess: () => {
       toast.success(editBudget ? "Budget updated" : "Budget created");
-      queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      invalidateFinanceQueries(queryClient);
       setModalOpen(false);
       setEditBudget(null);
       form.reset();
@@ -56,7 +57,7 @@ export default function Budgets() {
     mutationFn: (id) => budgetService.delete(id),
     onSuccess: () => {
       toast.success("Budget deleted");
-      queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      invalidateFinanceQueries(queryClient);
       setDeleteId(null);
     },
   });

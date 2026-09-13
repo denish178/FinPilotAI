@@ -75,4 +75,9 @@ export const aiService = {
 
 export const recurringService = {
   list: (params) => api.get("/recurring", { params }),
+  create: (data) => api.post("/recurring", data),
+  update: (id, data) => api.put(`/recurring/${id}`, data),
+  delete: (id) => api.delete(`/recurring/${id}`),
+  toggle: (id, isActive) => api.post(`/recurring/${id}/toggle`, { isActive }),
+  runNow: (id) => api.post(`/recurring/${id}/run-now`),
 };

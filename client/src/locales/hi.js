@@ -23,6 +23,7 @@ export default {
   "nav.analytics": "विश्लेषण",
   "nav.budgets": "बजट",
   "nav.goals": "लक्ष्य",
+  "nav.recurring": "आवर्ती",
   "nav.ai": "AI सहायक",
   "nav.notifications": "सूचनाएँ",
   "nav.profile": "प्रोफ़ाइल",

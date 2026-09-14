@@ -3,6 +3,10 @@ import validateEnv from "./config/env.js";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import { startRecurringScheduler } from "./scheduler/recurring.scheduler.js";
+import {
+  getEmailDeliveryMode,
+  verifyEmailTransport,
+} from "./services/email.service.js";
 
 try {
   validateEnv();
@@ -25,6 +29,22 @@ const startServer = async () => {
     );
     if (aiInfo.fallbackReason) {
       console.log(`AI note: ${aiInfo.fallbackReason}`);
+    }
+
+    const emailMode = getEmailDeliveryMode();
+    if (emailMode === "console") {
+      console.log(
+        "Email: console mode (set SMTP_HOST in .env to send real password-reset mail)",
+      );
+    } else {
+      const emailCheck = await verifyEmailTransport();
+      if (emailCheck.ok) {
+        console.log("Email: SMTP connected and ready");
+      } else {
+        console.warn(
+          `Email: SMTP configured but verify failed — ${emailCheck.error}`,
+        );
+      }
     }
 
     app.listen(PORT, () => {

@@ -212,7 +212,8 @@ const importTransactionItemValidator = [
     .withMessage("Each transaction description must be at most 200 characters"),
 
   body("transactions.*.date")
-    .optional({ values: "falsy" })
+    .notEmpty()
+    .withMessage("Each transaction date is required")
     .isISO8601()
     .withMessage("Each transaction date must be a valid ISO 8601 date")
     .toDate(),

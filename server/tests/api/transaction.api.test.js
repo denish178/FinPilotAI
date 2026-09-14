@@ -74,6 +74,29 @@ describe("Transaction API", () => {
     });
   });
 
+  describe("POST /api/transactions/import", () => {
+    it("should bulk import transactions", async () => {
+      const res = await request(app)
+        .post("/api/transactions/import")
+        .set(authHeader(accessToken))
+        .send({
+          transactions: [
+            {
+              type: "expense",
+              amount: 50,
+              category: "Food",
+              description: "Import test",
+              date: new Date().toISOString(),
+              paymentMethod: "upi",
+            },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.createdCount).toBe(1);
+    });
+  });
+
   describe("DELETE /api/transactions/:id", () => {
     it("should soft delete a transaction", async () => {
       const created = await request(app)

@@ -160,7 +160,12 @@ export default function Transactions() {
       setIsImporting(false);
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || "Import failed");
+      const data = err.response?.data;
+      const validationMsg = data?.errors?.[0]?.msg;
+      const failedMsg = data?.data?.failed?.[0]?.message;
+      toast.error(
+        validationMsg || failedMsg || data?.message || "Import failed",
+      );
       setIsImporting(false);
     },
   });
@@ -240,13 +245,21 @@ export default function Transactions() {
       return;
     }
 
+    if (file.size === 0) {
+      toast.error("The file is empty");
+      return;
+    }
+
     setIsImporting(true);
     try {
       const content = await file.text();
       const { transactions, errors } = parseTransactionsCsv(content);
 
       if (errors.length) {
-        toast(`Skipped ${errors.length} invalid row(s)`, { icon: "⚠️" });
+        const detail = errors[0]
+          ? ` (e.g. row ${errors[0].row}: ${errors[0].message})`
+          : "";
+        toast(`Skipped ${errors.length} invalid row(s)${detail}`, { icon: "⚠️" });
       }
 
       importMutation.mutate(transactions);
@@ -282,7 +295,7 @@ export default function Transactions() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".csv,text/csv"
+        accept=".csv,text/csv,application/vnd.ms-excel"
         className="hidden"
         onChange={handleImportFile}
       />

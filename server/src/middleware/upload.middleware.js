@@ -9,7 +9,13 @@ export const AVATAR_UPLOAD_DIR = path.join(__dirname, "../../uploads/avatars");
 
 fs.mkdirSync(AVATAR_UPLOAD_DIR, { recursive: true });
 
-const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
 
 const storage = multer.diskStorage({
   destination(_req, _file, cb) {

@@ -1,7 +1,10 @@
+const isProduction = process.env.NODE_ENV === "production";
+
+/** Vercel + Render (cross-site): SameSite=None + Secure so refresh cookies work. */
 export const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
 };
 
 export const accessTokenCookieOptions = {

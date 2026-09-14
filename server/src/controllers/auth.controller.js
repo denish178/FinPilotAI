@@ -76,6 +76,7 @@ export const loginUser = asyncHandler(async (req, res) => {
       {
         user: loggedInUser,
         accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       },
       "Login successful",
     ),
@@ -83,7 +84,10 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const refreshToken = asyncHandler(async (req, res) => {
-  const result = await authService.refreshAccessToken(req.cookies?.refreshToken);
+  const incoming =
+    req.body?.refreshToken?.trim() || req.cookies?.refreshToken;
+
+  const result = await authService.refreshAccessToken(incoming);
 
   authService.setAuthCookies(res, {
     accessToken: result.accessToken,
@@ -93,7 +97,10 @@ export const refreshToken = asyncHandler(async (req, res) => {
   return res.status(200).json(
     new ApiResponse(
       200,
-      { accessToken: result.accessToken },
+      {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      },
       "Access token refreshed successfully",
     ),
   );

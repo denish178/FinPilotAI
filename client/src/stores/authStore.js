@@ -15,21 +15,30 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
 
       setAccessToken: (token) => set({ accessToken: token, isAuthenticated: !!token }),
 
+      setSession: ({ user, accessToken, refreshToken }) =>
+        set({
+          user: user ?? null,
+          accessToken: accessToken ?? null,
+          refreshToken: refreshToken ?? null,
+          isAuthenticated: Boolean(accessToken),
+        }),
+
       login: async (credentials) => {
         set({ isLoading: true });
         try {
           const { data } = await authService.login(credentials);
-          set({
+          get().setSession({
             user: data.data.user,
             accessToken: data.data.accessToken,
-            isAuthenticated: true,
-            isLoading: false,
+            refreshToken: data.data.refreshToken,
           });
+          set({ isLoading: false });
           await get().loadSettings();
           return data;
         } catch (error) {
@@ -46,12 +55,12 @@ export const useAuthStore = create(
             email: payload.email,
             password: payload.password,
           });
-          set({
+          get().setSession({
             user: data.data.user,
             accessToken: data.data.accessToken,
-            isAuthenticated: true,
-            isLoading: false,
+            refreshToken: data.data.refreshToken,
           });
+          set({ isLoading: false });
           await get().loadSettings();
           return data;
         } catch (error) {
@@ -108,7 +117,7 @@ export const useAuthStore = create(
         } catch {
           // ignore
         }
-        set({ user: null, accessToken: null, isAuthenticated: false });
+        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
       },
 
       updateUser: (user) => set({ user }),
@@ -158,7 +167,7 @@ export const useAuthStore = create(
         set({ isLoading: true });
         try {
           await authService.deleteAccount(password);
-          set({ user: null, accessToken: null, isAuthenticated: false, isLoading: false });
+          set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, isLoading: false });
         } catch (error) {
           set({ isLoading: false });
           throw error;
@@ -169,6 +178,7 @@ export const useAuthStore = create(
       name: "finpilot-auth",
       partialize: (state) => ({
         accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),

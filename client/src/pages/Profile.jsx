@@ -154,7 +154,12 @@ export default function Profile() {
               aria-label="Change avatar"
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt={user?.name} className="h-full w-full object-cover" />
+                <img
+                  key={avatarUrl}
+                  src={avatarUrl}
+                  alt={user?.name}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 user?.name?.charAt(0)?.toUpperCase() || "U"
               )}

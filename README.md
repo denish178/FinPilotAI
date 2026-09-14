@@ -144,6 +144,23 @@ docker compose down
 3. Use `Authorization: Bearer <accessToken>` for protected routes
 4. `POST /api/auth/refresh-token` — refresh expired access token
 
+### Email (password reset & verification)
+
+Set SMTP in `server/.env` so reset links go to the inbox (not only the server console):
+
+| Variable | Example |
+|----------|---------|
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_SECURE` | `false` |
+| `SMTP_USER` | your mailbox |
+| `SMTP_PASS` | app password / SMTP key |
+| `EMAIL_FROM` | `FinPilot AI <you@gmail.com>` |
+| `CLIENT_URL` | must match frontend URL in reset links |
+
+On startup the API logs `Email: SMTP connected and ready` or a verify error.  
+If `SMTP_HOST` is empty, forgot-password links appear in the **API terminal** (development).
+
 ---
 
 ## Testing
@@ -163,6 +180,7 @@ npm test
 - [ ] Use MongoDB Atlas or managed MongoDB
 - [ ] Set `NODE_ENV=production`
 - [ ] Configure `CLIENT_URL` to your frontend domain
+- [ ] Configure `SMTP_*` and `EMAIL_FROM` for password reset / verification email
 - [ ] Enable HTTPS (reverse proxy / load balancer)
 - [ ] Set `OPENAI_API_KEY` if using AI provider `openai`
 - [ ] Review rate limits in `.env.production.example`

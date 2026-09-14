@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import ApiError from "../utils/ApiError.js";
 import { generateSecureToken, hashToken } from "../utils/token.util.js";
-import { sendEmail } from "./email.service.js";
+import { sendEmail, isEmailConfigured } from "./email.service.js";
 import * as authService from "./auth.service.js";
 
 const RESET_TTL_MS = 60 * 60 * 1000;
@@ -9,6 +9,19 @@ const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 
 const clientBaseUrl = () =>
   (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, "");
+
+const clearPasswordResetFields = (user) => {
+  user.passwordResetTokenHash = undefined;
+  user.passwordResetExpires = undefined;
+};
+
+const emailDeliveryError = () =>
+  new ApiError(
+    503,
+    isEmailConfigured()
+      ? "Unable to send email right now. Please try again in a few minutes."
+      : "Email is not configured on the server. Set SMTP_* variables in server/.env.",
+  );
 
 export const requestPasswordReset = async (email) => {
   const normalized = email.trim().toLowerCase();
@@ -25,12 +38,18 @@ export const requestPasswordReset = async (email) => {
 
   const resetUrl = `${clientBaseUrl()}/reset-password?token=${rawToken}`;
 
-  await sendEmail({
-    to: user.email,
-    subject: "Reset your FinPilot password",
-    text: `Use this link to reset your password (valid for 1 hour):\n\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
-    html: `<p>Use this link to reset your password (valid for 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Reset your FinPilot password",
+      text: `Use this link to reset your password (valid for 1 hour):\n\n${resetUrl}\n\nIf you did not request this, ignore this email.`,
+      html: `<p>Use this link to reset your password (valid for 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
+    });
+  } catch {
+    clearPasswordResetFields(user);
+    await user.save({ validateBeforeSave: false });
+    throw emailDeliveryError();
+  }
 
   return { sent: true };
 };
@@ -68,12 +87,19 @@ export const sendEmailVerification = async (user) => {
 
   const verifyUrl = `${clientBaseUrl()}/verify-email?token=${rawToken}`;
 
-  await sendEmail({
-    to: user.email,
-    subject: "Verify your FinPilot email",
-    text: `Verify your email:\n\n${verifyUrl}`,
-    html: `<p>Verify your email:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Verify your FinPilot email",
+      text: `Verify your email:\n\n${verifyUrl}`,
+      html: `<p>Verify your email:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+    });
+  } catch {
+    user.emailVerificationTokenHash = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    throw emailDeliveryError();
+  }
 };
 
 export const verifyEmailWithToken = async (token) => {

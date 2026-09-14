@@ -9,25 +9,34 @@ export const PAYMENT_METHODS = [
 ];
 
 export const EXPENSE_CATEGORIES = [
-  "Food",
+  "Groceries",
+  "Food & Dining",
   "Transport",
+  "Fuel",
   "Shopping",
-  "Bills",
-  "Entertainment",
-  "Health",
-  "Education",
+  "Bills & Utilities",
   "Rent",
+  "EMI & Loans",
+  "Insurance",
+  "Healthcare",
+  "Education",
+  "Entertainment",
+  "Subscriptions",
+  "Personal Care",
   "Travel",
+  "Gifts & Charity",
+  "Taxes & Fees",
   "Other",
 ];
 
 export const INCOME_CATEGORIES = [
   "Salary",
   "Freelance",
-  "Investment",
   "Business",
-  "Gift",
-  "Refund",
+  "Investment Returns",
+  "Rental Income",
+  "Refunds & Cashback",
+  "Gift Received",
   "Other",
 ];
 

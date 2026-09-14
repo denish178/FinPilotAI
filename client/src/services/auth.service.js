@@ -10,9 +10,7 @@ export const authService = {
   uploadAvatar: (file) => {
     const formData = new FormData();
     formData.append("avatar", file);
-    return api.post("/auth/avatar", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    return api.post("/auth/avatar", formData);
   },
   deleteAccount: (password) =>
     api.delete("/auth/account", { data: { password } }),

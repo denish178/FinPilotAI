@@ -117,7 +117,7 @@ npm run dev
 
 ### 1. Configure Docker env
 
-Edit `server/.env.docker` and set secure JWT secrets:
+Copy `server/.env.docker.example` to `server/.env.docker` (gitignored) and set secure JWT secrets:
 
 ```bash
 JWT_SECRET=your_secure_secret_at_least_32_characters
@@ -207,7 +207,7 @@ npm test
 |------|---------|
 | `server/.env.example` | Local development |
 | `server/.env.production.example` | Production reference |
-| `server/.env.docker` | Docker Compose |
+| `server/.env.docker.example` | Docker Compose template (copy to `.env.docker`) |
 | `client/.env.example` | Local dev |
 | `client/.env.production.example` | Production build |
 

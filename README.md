@@ -10,18 +10,32 @@ AI-powered Personal Finance Management application — track income, expenses, b
 | **Backend** | Node.js, Express, MongoDB, Mongoose, JWT, bcrypt |
 | **Security** | Helmet, rate limiting, CORS, NoSQL sanitization, JWT refresh tokens |
 | **Testing** | Jest, Supertest, MongoDB Memory Server |
-| **Deployment** | Docker, Docker Compose, Nginx |
+| **Deployment** | Vercel (frontend), Render (API), Docker, MongoDB Atlas |
+
+---
+
+## Live deployment
+
+| | URL |
+|---|-----|
+| **Frontend** | https://fin-pilot-ai-eight.vercel.app |
+| **API health** | https://finpilot-backend-5660.onrender.com/api/health |
+
+**Vercel env:** `VITE_API_URL=https://finpilot-backend-5660.onrender.com/api` (redeploy after change)
+
+**Render env (required):** `MONGODB_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL=https://fin-pilot-ai-eight.vercel.app`, `NODE_ENV=production`, plus `SMTP_*` and `EMAIL_FROM` for email.
 
 ---
 
 ## Features
 
 - User authentication (register, login, JWT + refresh tokens)
-- Transactions (CRUD, filters, pagination, CSV import/export)
+- Transactions (CRUD, filters, pagination, CSV import **preview**, export)
+- Legacy **category migration** (Settings)
 - Dashboard & analytics charts
 - Monthly budgets with auto-sync from expenses
 - Savings goals with progress tracking
-- Recurring transactions (cron scheduler)
+- Recurring transactions (create, **edit**, pause, run now; cron scheduler)
 - Notifications (budget exceeded, goals, large expenses)
 - AI financial insights (rule-based, OpenAI-ready)
 - Profile, settings, avatar upload, i18n structure (EN/HI)
@@ -170,7 +184,7 @@ cd server
 npm test
 ```
 
-29 tests covering auth, transactions, budgets (service + API).
+35 tests covering auth, transactions, budgets, recurring, and category migration (service + API).
 
 ---
 

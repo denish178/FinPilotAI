@@ -29,7 +29,7 @@ export const downloadCsv = (filename, csvContent) => {
 const sanitizeCsvText = (fileContent) => {
   let text = fileContent.replace(/^\uFEFF/, "");
   if (text.includes("\u0000")) {
-    text = text.replace(/\u0000/g, "");
+    text = text.split("\u0000").join("");
   }
   return text;
 };

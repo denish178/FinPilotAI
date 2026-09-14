@@ -104,6 +104,8 @@ export default function Transactions() {
   const [selected, setSelected] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isParsingCsv, setIsParsingCsv] = useState(false);
+  const [importPreview, setImportPreview] = useState(null);
 
   const queryParams = buildQueryParams(filters, page);
 
@@ -157,6 +159,7 @@ export default function Transactions() {
         toast("Some imported expenses triggered budget alerts", { icon: "⚠️" });
       }
       invalidateFinanceQueries(queryClient);
+      setImportPreview(null);
       setIsImporting(false);
     },
     onError: (err) => {
@@ -250,24 +253,36 @@ export default function Transactions() {
       return;
     }
 
-    setIsImporting(true);
+    setIsParsingCsv(true);
     try {
       const content = await file.text();
       const { transactions, errors } = parseTransactionsCsv(content);
 
-      if (errors.length) {
-        const detail = errors[0]
-          ? ` (e.g. row ${errors[0].row}: ${errors[0].message})`
-          : "";
-        toast(`Skipped ${errors.length} invalid row(s)${detail}`, { icon: "⚠️" });
-      }
-
-      importMutation.mutate(transactions);
+      setImportPreview({
+        fileName: file.name,
+        transactions,
+        errors,
+      });
     } catch (error) {
       toast.error(error.message || "Invalid CSV file");
-      setIsImporting(false);
+    } finally {
+      setIsParsingCsv(false);
     }
   };
+
+  const cancelImportPreview = () => {
+    setImportPreview(null);
+  };
+
+  const confirmImport = () => {
+    if (!importPreview?.transactions?.length) return;
+    setIsImporting(true);
+    importMutation.mutate(importPreview.transactions);
+  };
+
+  const previewSample = importPreview?.transactions?.slice(0, 8) ?? [];
+  const previewIncome = importPreview?.transactions?.filter((t) => t.type === "income").length ?? 0;
+  const previewExpense = importPreview?.transactions?.filter((t) => t.type === "expense").length ?? 0;
 
   const toggleSelect = (id) => {
     setSelected((prev) =>
@@ -317,7 +332,7 @@ export default function Transactions() {
             variant="outline"
             size="sm"
             onClick={handleImportClick}
-            isLoading={isImporting}
+            isLoading={isParsingCsv || isImporting}
           >
             <Upload size={16} /> Import CSV
           </Button>
@@ -547,6 +562,101 @@ export default function Transactions() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        open={!!importPreview}
+        onClose={cancelImportPreview}
+        title="Review CSV import"
+        size="xl"
+      >
+        {importPreview && (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              File: <span className="font-medium">{importPreview.fileName}</span>
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                <p className="text-xs text-slate-500">Ready to import</p>
+                <p className="text-xl font-bold">{importPreview.transactions.length}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                <p className="text-xs text-slate-500">Income rows</p>
+                <p className="text-xl font-bold text-primary-600">{previewIncome}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                <p className="text-xs text-slate-500">Expense rows</p>
+                <p className="text-xl font-bold text-red-500">{previewExpense}</p>
+              </div>
+            </div>
+
+            {importPreview.errors.length > 0 && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+                <p className="font-medium">
+                  {importPreview.errors.length} row(s) will be skipped
+                </p>
+                <ul className="mt-2 list-inside list-disc text-xs">
+                  {importPreview.errors.slice(0, 5).map((err) => (
+                    <li key={`${err.row}-${err.message}`}>
+                      Row {err.row}: {err.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase text-slate-500 dark:bg-slate-800/50">
+                  <tr>
+                    <th className="px-3 py-2">Date</th>
+                    <th className="px-3 py-2">Type</th>
+                    <th className="px-3 py-2">Category</th>
+                    <th className="px-3 py-2">Description</th>
+                    <th className="px-3 py-2 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewSample.map((row, index) => (
+                    <tr
+                      key={`${row.date}-${row.amount}-${index}`}
+                      className="border-t border-slate-100 dark:border-slate-800"
+                    >
+                      <td className="px-3 py-2">{formatDate(row.date)}</td>
+                      <td className="px-3 py-2">
+                        <Badge variant={row.type === "income" ? "success" : "warning"}>
+                          {row.type}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2">{row.category}</td>
+                      <td className="max-w-[200px] truncate px-3 py-2">
+                        {row.description || "—"}
+                      </td>
+                      <td className="px-3 py-2 text-right font-medium">
+                        {formatCurrency(row.amount, currency)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {importPreview.transactions.length > previewSample.length && (
+              <p className="text-xs text-slate-500">
+                Showing first {previewSample.length} of {importPreview.transactions.length}{" "}
+                transactions
+              </p>
+            )}
+
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
+              <Button variant="secondary" onClick={cancelImportPreview} disabled={isImporting}>
+                Cancel
+              </Button>
+              <Button onClick={confirmImport} isLoading={isImporting}>
+                Import {importPreview.transactions.length} transaction(s)
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <ConfirmDialog

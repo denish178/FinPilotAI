@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { Plus, Trash2, Play, Pause, Zap } from "lucide-react";
+import { Plus, Trash2, Play, Pause, Zap, Pencil } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -42,10 +42,50 @@ const defaultValues = {
   endDate: "",
 };
 
+const toFormValues = (item) => ({
+  type: item.type,
+  amount: String(item.amount ?? ""),
+  category: item.category ?? "",
+  description: item.description ?? "",
+  paymentMethod: item.paymentMethod || "upi",
+  frequency: item.frequency || "monthly",
+  startDate: item.startDate
+    ? new Date(item.startDate).toISOString().slice(0, 10)
+    : defaultValues.startDate,
+  endDate: item.endDate
+    ? new Date(item.endDate).toISOString().slice(0, 10)
+    : "",
+});
+
+const buildPayload = (values, { recalculateNextRun = false, forUpdate = false } = {}) => {
+  const body = {
+    type: values.type,
+    amount: Number(values.amount),
+    category: values.category,
+    description: values.description || "",
+    paymentMethod: values.paymentMethod,
+    frequency: values.frequency,
+    startDate: new Date(values.startDate).toISOString(),
+  };
+
+  if (values.endDate) {
+    body.endDate = new Date(values.endDate).toISOString();
+  } else if (forUpdate) {
+    body.endDate = null;
+  }
+
+  if (recalculateNextRun) {
+    body.recalculateNextRun = true;
+  }
+
+  return body;
+};
+
 export default function Recurring() {
   const currency = useSettingsStore((s) => s.currency);
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const form = useForm({ defaultValues });
   const watchedType = form.watch("type");
@@ -57,24 +97,34 @@ export default function Recurring() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (payload) => {
-      const body = {
-        ...payload,
-        amount: Number(payload.amount),
-        startDate: new Date(payload.startDate).toISOString(),
-        endDate: payload.endDate
-          ? new Date(payload.endDate).toISOString()
-          : undefined,
-      };
-      return recurringService.create(body);
+    mutationFn: (values) => {
+      const scheduleChanged =
+        editItem &&
+        (values.frequency !== editItem.frequency ||
+          toFormValues(editItem).startDate !== values.startDate ||
+          toFormValues(editItem).endDate !== (values.endDate || ""));
+
+      const body = buildPayload(values, {
+        recalculateNextRun: Boolean(scheduleChanged),
+        forUpdate: Boolean(editItem),
+      });
+
+      return editItem
+        ? recurringService.update(editItem._id, body)
+        : recurringService.create(body);
     },
     onSuccess: () => {
-      toast.success("Recurring schedule created");
+      toast.success(editItem ? "Recurring schedule updated" : "Recurring schedule created");
       queryClient.invalidateQueries({ queryKey: ["recurring"] });
       setModalOpen(false);
+      setEditItem(null);
       form.reset(defaultValues);
     },
-    onError: (err) => toast.error(err.response?.data?.message || "Failed to create"),
+    onError: (err) =>
+      toast.error(
+        err.response?.data?.message ||
+          (editItem ? "Failed to update" : "Failed to create"),
+      ),
   });
 
   const deleteMutation = useMutation({
@@ -118,6 +168,7 @@ export default function Recurring() {
         </div>
         <Button
           onClick={() => {
+            setEditItem(null);
             form.reset(defaultValues);
             setModalOpen(true);
           }}
@@ -166,6 +217,17 @@ export default function Recurring() {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => {
+                    setEditItem(item);
+                    form.reset(toFormValues(item));
+                    setModalOpen(true);
+                  }}
+                >
+                  <Pencil size={14} /> Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   isLoading={runNowMutation.isPending}
                   onClick={() => runNowMutation.mutate(item._id)}
                 >
@@ -191,7 +253,15 @@ export default function Recurring() {
         </div>
       )}
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New recurring schedule">
+      <Modal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditItem(null);
+          form.reset(defaultValues);
+        }}
+        title={editItem ? "Edit recurring schedule" : "New recurring schedule"}
+      >
         <form
           onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))}
           className="space-y-4"
@@ -254,7 +324,7 @@ export default function Recurring() {
             <Input label="End date (optional)" type="date" {...form.register("endDate")} />
           </div>
           <Button type="submit" className="w-full" isLoading={saveMutation.isPending}>
-            Create schedule
+            {editItem ? "Save changes" : "Create schedule"}
           </Button>
         </form>
       </Modal>

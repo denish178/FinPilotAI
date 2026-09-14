@@ -1,6 +1,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import * as transactionService from "../services/transaction.service.js";
+import { migrateUserCategories } from "../services/categoryMigration.service.js";
 
 const buildBudgetAwareResponse = (transaction, budgetAlert, defaultMessage) => {
   const payload = {
@@ -105,6 +106,18 @@ export const updateTransaction = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, result.data, message));
+});
+
+export const migrateCategories = asyncHandler(async (req, res) => {
+  const summary = await migrateUserCategories(req.user._id);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      summary,
+      "Legacy categories updated to the current labels",
+    ),
+  );
 });
 
 export const importTransactions = asyncHandler(async (req, res) => {

@@ -19,6 +19,7 @@ export const transactionService = {
   update: (id, data) => api.put(`/transactions/${id}`, data),
   delete: (id) => api.delete(`/transactions/${id}`),
   import: (transactions) => api.post("/transactions/import", { transactions }),
+  migrateCategories: () => api.post("/transactions/migrate-categories"),
   listAll: async (params = {}) => {
     const limit = 100;
     let page = 1;

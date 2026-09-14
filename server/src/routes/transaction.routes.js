@@ -6,6 +6,7 @@ import {
   updateTransaction,
   deleteTransaction,
   importTransactions,
+  migrateCategories,
 } from "../controllers/transaction.controller.js";
 import verifyJWT from "../middleware/verifyJWT.js";
 import validate from "../middleware/validate.middleware.js";
@@ -27,6 +28,8 @@ router.post(
   validate,
   importTransactions,
 );
+
+router.post("/migrate-categories", migrateCategories);
 
 router
   .route("/")

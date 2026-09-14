@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Monitor, Moon, Sun } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { PageLoader } from "../components/ui/Loader";
@@ -8,6 +9,8 @@ import { useThemeStore } from "../stores/themeStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useAuthStore } from "../stores/authStore";
 import { useTranslation } from "../hooks/useTranslation";
+import { transactionService } from "../services";
+import { invalidateFinanceQueries } from "../utils/queryCache";
 import {
   CURRENCIES,
   LANGUAGES,
@@ -26,10 +29,32 @@ const themeIcons = {
 
 export default function Settings() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { setTheme } = useThemeStore();
   const { saveSettings, loadSettings, isLoading: authLoading } = useAuthStore();
   const settings = useSettingsStore();
   const [bootstrapped, setBootstrapped] = useState(false);
+
+  const migrateCategoriesMutation = useMutation({
+    mutationFn: () =>
+      transactionService.migrateCategories().then((r) => r.data.data),
+    onSuccess: (summary) => {
+      invalidateFinanceQueries(queryClient);
+      const updated =
+        (summary?.transactionsUpdated || 0) +
+        (summary?.recurringUpdated || 0) +
+        (summary?.budgetsUpdated || 0) +
+        (summary?.budgetsMerged || 0);
+      toast.success(
+        updated > 0 ? t("settings.categories.success") : t("settings.categories.nothing"),
+      );
+    },
+    onError: (err) => {
+      toast.error(
+        err.response?.data?.message || t("settings.categories.failed"),
+      );
+    },
+  });
 
   useEffect(() => {
     loadSettings().finally(() => setBootstrapped(true));
@@ -133,6 +158,20 @@ export default function Settings() {
             </label>
           ))}
         </div>
+      </Card>
+
+      <Card>
+        <h3 className="mb-2 font-semibold">{t("settings.categories.title")}</h3>
+        <p className="mb-4 text-sm text-slate-500">
+          {t("settings.categories.description")}
+        </p>
+        <Button
+          variant="secondary"
+          onClick={() => migrateCategoriesMutation.mutate()}
+          isLoading={migrateCategoriesMutation.isPending}
+        >
+          {t("settings.categories.action")}
+        </Button>
       </Card>
 
       <div className="flex justify-end">

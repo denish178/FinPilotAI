@@ -21,9 +21,18 @@ AI-powered Personal Finance Management application — track income, expenses, b
 | **Frontend** | https://fin-pilot-ai-eight.vercel.app |
 | **API health** | https://finpilot-backend-5660.onrender.com/api/health |
 
-**Vercel env:** `VITE_API_URL=https://finpilot-backend-5660.onrender.com/api` (redeploy after change)
+**Vercel env (Production + Preview):**
 
-**Render env (required):** `MONGODB_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL=https://fin-pilot-ai-eight.vercel.app`, `NODE_ENV=production`, plus `SMTP_*` and `EMAIL_FROM` for email.
+| Variable | Example |
+|----------|---------|
+| `VITE_API_URL` | `https://finpilot-backend-5660.onrender.com/api` |
+| `VITE_GOOGLE_CLIENT_ID` | Same **Web application** OAuth client ID as `GOOGLE_CLIENT_ID` on Render |
+
+Redeploy after any change — Vite bakes `VITE_*` at **build** time. Without `VITE_GOOGLE_CLIENT_ID`, Login/Register hide the Google button entirely.
+
+**Google Cloud Console** → OAuth client → **Authorized JavaScript origins:** `https://fin-pilot-ai-eight.vercel.app` and `http://localhost:5173`.
+
+**Render env (required):** `MONGODB_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL=https://fin-pilot-ai-eight.vercel.app`, `GOOGLE_CLIENT_ID` (same as Vercel), `NODE_ENV=production`, plus `SMTP_*` and `EMAIL_FROM` for email.
 
 ---
 

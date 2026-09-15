@@ -8,7 +8,7 @@ export default function ProtectedRoute({ children }) {
   const location = useLocation();
 
   if (!accessToken) {
-    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
+    return <Navigate to={ROUTES.REGISTER} state={{ from: location }} replace />;
   }
 
   if (!isAuthenticated) {
@@ -26,4 +26,20 @@ export function PublicRoute({ children }) {
   }
 
   return children;
+}
+
+export function HomeRedirect() {
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  if (accessToken && !isAuthenticated) {
+    return <PageLoader />;
+  }
+
+  return (
+    <Navigate
+      to={accessToken ? ROUTES.DASHBOARD : ROUTES.REGISTER}
+      replace
+    />
+  );
 }

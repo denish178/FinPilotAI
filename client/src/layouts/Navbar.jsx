@@ -39,7 +39,7 @@ export default function Navbar({ onMenuClick }) {
 
   const handleLogout = async () => {
     await logout();
-    navigate(ROUTES.LOGIN);
+    navigate(ROUTES.REGISTER);
   };
 
   return (

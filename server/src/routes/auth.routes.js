@@ -20,7 +20,7 @@ import {
 import express from "express";
 import verifyJWT from "../middleware/verifyJWT.js";
 import validate from "../middleware/validate.middleware.js";
-import { authLimiter } from "../middleware/rateLimiter.middleware.js";
+import { authLimiter, refreshTokenLimiter } from "../middleware/rateLimiter.middleware.js";
 import { uploadAvatar, handleMulterError } from "../middleware/upload.middleware.js";
 import {
   forgotPasswordValidator,
@@ -46,7 +46,7 @@ router.post(
   validate,
   googleAuth,
 );
-router.post("/refresh-token", authLimiter, refreshToken);
+router.post("/refresh-token", refreshTokenLimiter, refreshToken);
 router.post("/forgot-password", authLimiter, forgotPasswordValidator, validate, forgotPassword);
 router.post("/reset-password", authLimiter, resetPasswordValidator, validate, resetPassword);
 router.post("/verify-email", authLimiter, verifyEmailValidator, validate, verifyEmail);

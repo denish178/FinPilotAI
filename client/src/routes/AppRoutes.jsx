@@ -1,7 +1,7 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ROUTES } from "../constants/routes";
 import AppLayout from "../layouts/AppLayout";
-import ProtectedRoute, { PublicRoute } from "./ProtectedRoute";
+import ProtectedRoute, { PublicRoute, HomeRedirect } from "./ProtectedRoute";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
@@ -22,7 +22,7 @@ import NotFound from "../pages/NotFound";
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+      <Route path="/" element={<HomeRedirect />} />
 
       <Route path={ROUTES.LOGIN} element={<PublicRoute><Login /></PublicRoute>} />
       <Route path={ROUTES.REGISTER} element={<PublicRoute><Register /></PublicRoute>} />

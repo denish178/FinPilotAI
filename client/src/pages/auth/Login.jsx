@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import AuthLayout from "../../layouts/AuthLayout";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 import { useAuthStore } from "../../stores/authStore";
 import { ROUTES } from "../../constants/routes";
 
@@ -17,6 +18,7 @@ const schema = z.object({
 export default function Login() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   const {
@@ -35,6 +37,16 @@ export default function Login() {
         err.response?.data?.message ||
         (err.request ? "Cannot reach server. Is the backend running?" : "Login failed");
       toast.error(message);
+    }
+  };
+
+  const handleGoogle = async (credential) => {
+    try {
+      await loginWithGoogle(credential);
+      toast.success("Welcome back!");
+      navigate(ROUTES.DASHBOARD);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Google sign-in failed");
     }
   };
 
@@ -67,6 +79,7 @@ export default function Login() {
           Sign in
         </Button>
       </form>
+      <GoogleSignInButton onCredential={handleGoogle} disabled={isLoading} />
       <p className="mt-6 text-center text-sm text-slate-500">
         Don&apos;t have an account?{" "}
         <Link to={ROUTES.REGISTER} className="font-medium text-primary-600 hover:underline">

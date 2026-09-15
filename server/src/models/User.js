@@ -20,10 +20,23 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: 6,
+      select: false,
     },
 
     avatar: {
@@ -117,15 +130,24 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// Hash password before saving
+// Hash password before saving (local accounts and linked accounts with password)
 userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+  if (!this.isModified("password") || !this.password) return;
 
   this.password = await bcrypt.hash(this.password, 10);
 });
 
+userSchema.pre("validate", function () {
+  if (this.authProvider === "local" && !this.googleId) {
+    if (!this.password || String(this.password).length < 6) {
+      this.invalidate("password", "Password is required for email sign-up");
+    }
+  }
+});
+
 // Compare entered password with hashed password
 userSchema.methods.isPasswordCorrect = async function (password) {
+  if (!this.password) return false;
   return await bcrypt.compare(password, this.password);
 };
 

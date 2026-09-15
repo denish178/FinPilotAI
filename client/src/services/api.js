@@ -19,6 +19,7 @@ let failedQueue = [];
 
 const AUTH_PATHS = [
   "/auth/login",
+  "/auth/google",
   "/auth/register",
   "/auth/refresh-token",
   "/auth/forgot-password",

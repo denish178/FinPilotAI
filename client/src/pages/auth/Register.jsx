@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import AuthLayout from "../../layouts/AuthLayout";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import GoogleSignInButton from "../../components/auth/GoogleSignInButton";
 import { useAuthStore } from "../../stores/authStore";
 import { ROUTES } from "../../constants/routes";
 
@@ -24,6 +25,7 @@ const schema = z
 export default function Register() {
   const navigate = useNavigate();
   const registerUser = useAuthStore((s) => s.register);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   const {
@@ -46,6 +48,16 @@ export default function Register() {
         err.response?.data?.message ||
         (err.request ? "Cannot reach server. Is the backend running?" : "Registration failed");
       toast.error(message);
+    }
+  };
+
+  const handleGoogle = async (credential) => {
+    try {
+      await loginWithGoogle(credential);
+      toast.success("Account created! Welcome to FinPilot.");
+      navigate(ROUTES.DASHBOARD);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Google sign-up failed");
     }
   };
 
@@ -83,6 +95,7 @@ export default function Register() {
           Create account
         </Button>
       </form>
+      <GoogleSignInButton onCredential={handleGoogle} disabled={isLoading} />
       <p className="mt-6 text-center text-sm text-slate-500">
         Already have an account?{" "}
         <Link to={ROUTES.LOGIN} className="font-medium text-primary-600 hover:underline">

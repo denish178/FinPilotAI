@@ -4,6 +4,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import * as authService from "../services/auth.service.js";
 import * as passwordResetService from "../services/passwordReset.service.js";
+import * as googleAuthService from "../services/googleAuth.service.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -53,10 +54,17 @@ export const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({
     email: email.toLowerCase(),
     isDeleted: false,
-  });
+  }).select("+password");
 
   if (!user) {
     throw new ApiError(401, "Invalid email or password");
+  }
+
+  if (!user.password) {
+    throw new ApiError(
+      401,
+      "This account uses Google sign-in. Continue with Google instead.",
+    );
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
@@ -79,6 +87,28 @@ export const loginUser = asyncHandler(async (req, res) => {
         refreshToken: tokens.refreshToken,
       },
       "Login successful",
+    ),
+  );
+});
+
+export const googleAuth = asyncHandler(async (req, res) => {
+  const user = await googleAuthService.authenticateWithGoogle(
+    req.body.credential,
+  );
+
+  const tokens = authService.issueAuthTokens(user);
+  const loggedInUser = await authService.sanitizeUser(user._id);
+  authService.setAuthCookies(res, tokens);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: loggedInUser,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
+      "Google sign-in successful",
     ),
   );
 });

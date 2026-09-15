@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import AppRoutes from "./routes/AppRoutes";
 import { useAuthStore } from "./stores/authStore";
 import { useThemeStore } from "./stores/themeStore";
@@ -33,8 +34,10 @@ function AppInitializer({ children }) {
   return children;
 }
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
+
 export default function App() {
-  return (
+  const content = (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppInitializer>
@@ -49,5 +52,13 @@ export default function App() {
         </AppInitializer>
       </BrowserRouter>
     </QueryClientProvider>
+  );
+
+  if (!googleClientId) {
+    return content;
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>{content}</GoogleOAuthProvider>
   );
 }

@@ -47,6 +47,24 @@ export const useAuthStore = create(
         }
       },
 
+      loginWithGoogle: async (credential) => {
+        set({ isLoading: true });
+        try {
+          const { data } = await authService.googleLogin(credential);
+          get().setSession({
+            user: data.data.user,
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
+          });
+          set({ isLoading: false });
+          await get().loadSettings();
+          return data;
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
       register: async (payload) => {
         set({ isLoading: true });
         try {

@@ -20,3 +20,10 @@ export const resetPasswordValidator = [
 export const verifyEmailValidator = [
   body("token").trim().notEmpty().withMessage("Verification token is required"),
 ];
+
+export const googleAuthValidator = [
+  body("credential")
+    .trim()
+    .notEmpty()
+    .withMessage("Google credential is required"),
+];

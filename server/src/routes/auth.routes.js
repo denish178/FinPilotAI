@@ -7,6 +7,7 @@ import {
   forgotPassword,
   resetPassword,
   verifyEmail,
+  googleAuth,
 } from "../controllers/auth.controller.js";
 import {
   updateProfile,
@@ -25,6 +26,7 @@ import {
   forgotPasswordValidator,
   resetPasswordValidator,
   verifyEmailValidator,
+  googleAuthValidator,
 } from "../validators/auth.validator.js";
 import {
   updateProfileValidator,
@@ -37,6 +39,13 @@ const router = express.Router();
 
 router.post("/register", authLimiter, registerUser);
 router.post("/login", authLimiter, loginUser);
+router.post(
+  "/google",
+  authLimiter,
+  googleAuthValidator,
+  validate,
+  googleAuth,
+);
 router.post("/refresh-token", authLimiter, refreshToken);
 router.post("/forgot-password", authLimiter, forgotPasswordValidator, validate, forgotPassword);
 router.post("/reset-password", authLimiter, resetPasswordValidator, validate, resetPassword);

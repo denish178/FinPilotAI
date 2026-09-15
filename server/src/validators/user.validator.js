@@ -40,8 +40,9 @@ export const changePasswordValidator = [
 
 export const deleteAccountValidator = [
   body("password")
-    .notEmpty()
-    .withMessage("Password is required to delete your account"),
+    .optional({ values: "falsy" })
+    .isString()
+    .withMessage("Password must be a string"),
 ];
 
 export const updateSettingsValidator = [

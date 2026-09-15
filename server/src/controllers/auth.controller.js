@@ -94,6 +94,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const googleAuth = asyncHandler(async (req, res) => {
   const user = await googleAuthService.authenticateWithGoogle(
     req.body.credential,
+    req.body.intent,
   );
 
   const tokens = authService.issueAuthTokens(user);

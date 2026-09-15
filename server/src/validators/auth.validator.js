@@ -26,4 +26,10 @@ export const googleAuthValidator = [
     .trim()
     .notEmpty()
     .withMessage("Google credential is required"),
+  body("intent")
+    .trim()
+    .notEmpty()
+    .withMessage("intent is required")
+    .isIn(["login", "signup"])
+    .withMessage("intent must be login or signup"),
 ];

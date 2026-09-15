@@ -69,6 +69,7 @@ export default function Profile() {
   });
 
   const avatarUrl = getAvatarUrl(user?.avatar);
+  const isGoogleAccount = user?.authProvider === "google";
 
   const onProfileSubmit = async (data) => {
     try {
@@ -117,13 +118,13 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!deletePassword) {
+    if (!isGoogleAccount && !deletePassword) {
       toast.error("Enter your password to confirm deletion");
       return;
     }
 
     try {
-      await deleteAccount(deletePassword);
+      await deleteAccount(isGoogleAccount ? undefined : deletePassword);
       toast.success("Account deleted");
       navigate(ROUTES.LOGIN);
     } catch (err) {
@@ -216,6 +217,11 @@ export default function Profile() {
 
       <Card>
         <h3 className="mb-4 font-semibold">Change Password</h3>
+        {isGoogleAccount ? (
+          <p className="text-sm text-slate-500">
+            You signed in with Google. Password login is not set for this account.
+          </p>
+        ) : (
         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
           <Input
             label="Current Password"
@@ -239,6 +245,7 @@ export default function Profile() {
             Change Password
           </Button>
         </form>
+        )}
       </Card>
 
       <Card className="border-red-200 dark:border-red-900">
@@ -259,10 +266,15 @@ export default function Profile() {
         }}
         onConfirm={handleDeleteAccount}
         title="Delete account?"
-        message="Enter your password to permanently delete your account and all financial data."
+        message={
+          isGoogleAccount
+            ? "This will permanently delete your Google-linked account and all financial data. This cannot be undone."
+            : "Enter your password to permanently delete your account and all financial data."
+        }
         confirmText="Delete forever"
         isLoading={isLoading}
       >
+        {!isGoogleAccount && (
         <Input
           label="Password"
           type="password"
@@ -270,6 +282,7 @@ export default function Profile() {
           onChange={(e) => setDeletePassword(e.target.value)}
           className="mt-4"
         />
+        )}
       </ConfirmDialog>
     </div>
   );

@@ -3,7 +3,8 @@ import api from "./api";
 export const authService = {
   register: (data) => api.post("/auth/register", data),
   login: (data) => api.post("/auth/login", data),
-  googleLogin: (credential) => api.post("/auth/google", { credential }),
+  googleLogin: (credential, intent = "login") =>
+    api.post("/auth/google", { credential, intent }),
   logout: () => api.post("/auth/logout"),
   getMe: () => api.get("/auth/me"),
   updateProfile: (data) => api.patch("/auth/profile", data),
@@ -14,7 +15,9 @@ export const authService = {
     return api.post("/auth/avatar", formData);
   },
   deleteAccount: (password) =>
-    api.delete("/auth/account", { data: { password } }),
+    api.delete("/auth/account", {
+      data: password?.trim() ? { password: password.trim() } : {},
+    }),
   getSettings: () => api.get("/auth/settings"),
   updateSettings: (data) => api.patch("/auth/settings", data),
   forgotPassword: (email) =>

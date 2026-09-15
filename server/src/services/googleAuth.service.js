@@ -7,7 +7,7 @@ const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID?.trim();
 
 export const isGoogleAuthConfigured = () => Boolean(getGoogleClientId());
 
-export const authenticateWithGoogle = async (credential) => {
+export const authenticateWithGoogle = async (credential, intent = "signup") => {
   const clientId = getGoogleClientId();
   if (!clientId) {
     throw new ApiError(503, "Google sign-in is not configured on the server");
@@ -61,6 +61,13 @@ export const authenticateWithGoogle = async (credential) => {
   user = await User.findOne({ email, isDeleted: false }).select("+password");
 
   if (user) {
+    if (intent === "signup") {
+      throw new ApiError(
+        409,
+        `An account with ${email} already exists. Sign in instead.`,
+      );
+    }
+
     user.googleId = googleId;
     user.isEmailVerified = true;
     if (avatar && !user.avatar) {
@@ -72,6 +79,19 @@ export const authenticateWithGoogle = async (credential) => {
     await user.save({ validateBeforeSave: false });
     return user;
   }
+
+  if (intent === "login") {
+    throw new ApiError(
+      404,
+      `No account found for ${email}. Create an account on the sign-up page first.`,
+    );
+  }
+
+  // Free googleId from soft-deleted accounts so the same Google identity can sign up again
+  await User.updateMany(
+    { googleId, isDeleted: true },
+    { $unset: { googleId: "" } },
+  );
 
   user = new User({
     name,

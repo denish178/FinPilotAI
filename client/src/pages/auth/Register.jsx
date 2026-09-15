@@ -25,7 +25,7 @@ const schema = z
 export default function Register() {
   const navigate = useNavigate();
   const registerUser = useAuthStore((s) => s.register);
-  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
+  const signupWithGoogle = useAuthStore((s) => s.signupWithGoogle);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   const {
@@ -53,7 +53,7 @@ export default function Register() {
 
   const handleGoogle = async (credential) => {
     try {
-      await loginWithGoogle(credential);
+      await signupWithGoogle(credential);
       toast.success("Account created! Welcome to FinPilot.");
       navigate(ROUTES.DASHBOARD);
     } catch (err) {

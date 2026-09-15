@@ -166,15 +166,25 @@ export const updateSettings = async (userId, payload) => {
 };
 
 export const deleteAccount = async (userId, password) => {
-  const user = await User.findOne({ _id: userId, isDeleted: false });
+  const user = await User.findOne({ _id: userId, isDeleted: false }).select(
+    "+password",
+  );
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  const isValid = await user.isPasswordCorrect(password);
-  if (!isValid) {
-    throw new ApiError(401, "Incorrect password");
+  const isGoogleSignInAccount = user.authProvider === "google";
+
+  if (!isGoogleSignInAccount) {
+    if (!password?.trim()) {
+      throw new ApiError(400, "Password is required to delete your account");
+    }
+
+    const isValid = await user.isPasswordCorrect(password);
+    if (!isValid) {
+      throw new ApiError(401, "Incorrect password");
+    }
   }
 
   const deletedAt = new Date();
@@ -182,7 +192,15 @@ export const deleteAccount = async (userId, password) => {
   await Promise.all([
     User.updateOne(
       { _id: userId },
-      { $set: { isDeleted: true, deletedAt, email: `deleted_${userId}_${user.email}` }, $inc: { tokenVersion: 1 } },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt,
+          email: `deleted_${userId}_${user.email}`,
+        },
+        $unset: { googleId: "" },
+        $inc: { tokenVersion: 1 },
+      },
     ),
     Transaction.updateMany({ user: userId }, { $set: { isDeleted: true, deletedAt } }),
     Budget.updateMany({ user: userId }, { $set: { isDeleted: true, deletedAt } }),
